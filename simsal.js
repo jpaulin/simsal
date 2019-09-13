@@ -111,7 +111,7 @@ function normal_round (specialities) {
 
 
 function showStatsOfSimulation() {
-    console.log('Rounds played: ' + roundsTotal)
+    console.log('Rounds played: ' + roundsTotalPlayed)
 }
 
 
