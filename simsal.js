@@ -2,34 +2,20 @@
 // economics model. Capitalism vs the rest of the world :-)
 // 2019 ->
 
+// Chalk gives ASCII color to console output (colored text)
+var chk = import("chalk")
+
 // The version of this software
-globalVersion = '0.01'
+globalVersion = '0.02'
+basisString = 'Simulation running now for '
 
 // Running counter
 roundsTotalPlayed = 0
-
-// Desired simulation parameters: How much
-// These variables may not skew the simulation mechanics themselves.
-// Ie these just pure, neutral bookkeeping variables.
-roundsMaxRun = 500
+roundsMaxRun = 365  // Game ends at at most this many rounds been reached
 roundsOneRunDayEq = 1 // 1:1 = roundsMaxRun days. This is the scaling factor for time
 
-// FIXME: Do a pretty printer for a days => "nice to read human description of time"
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
-// How to use those formatted strings. They are called "string literal templates" in JS.
-function calculateHumanTimeFromRounds(eq, n) {
-	var brutal = n*eq    // Brutal is in days
-	// We "cascade drop" the brutal into biggest-var-first
-	var years = brutal % 365
-	brutal -= years*365
-	var months = brutal % 30
-	brutal -= months * 30 
-	var days = brutal
-	var stringer = '<N/A>' // FIXME this needs the code. This line forms the return value
-    // ------------------------
-	return stringer
- } 
-
+var globalSocialSecurityPeriod_Months = 24
+var globalSocialSecurityPeriod_Money  = 1250
 
 /* 
       Companies and their structure
@@ -41,7 +27,25 @@ comps = ['a corp LLC','b corp LLC','C corp LLC',
 // Main Driver Loop
 function MDL(argument) {
 	roundsTotalPlayed++
+    for (var i = 0; i < emps.length; i++) {
+        var currE = emps[i]
+        if (currE.isEmployed == true) {
+            currE.stintLengthMonths += 1
+        } else {
+            if (currE.socialSecMonthsLeft > 0) {
+                currE.cashAtHand += currE.socialSecMoney
+            } else {
+                // This is the non-employed employee, who runs out of social 
+                // security
+            }
+
+        }
+
+    }
+    // Let us calculate the financial events and tally up figures 
+    // FIXME
 }
+
 
 // Nitty information showing functions
 function versionString() {
@@ -82,6 +86,14 @@ emps = [
         },
         ]
 
+
+/*
+ The economics statistics of the nation 
+*/
+function globalStatsUpdate(evtName, empIndex, company, data) {
+    return true
+}
+
 // Event functions to be used when something active happens.
 // These are called by the main driver loop (MDL).
 // Change a employee's job into another company.
@@ -91,9 +103,31 @@ emps = [
 function changeJobs(empIndex, offer, toCompany) {
     // fetch the offer data
     var newSalary = offer.salaryPerMonth
+    var companyLeaver = emps[empIndex].company // save it!
   	emps[empIndex].company = toCompany
     emps[empIndex].sala = newSalary
-    
+    emps[empIndex].stintLengthMonths = 0
+}
+
+function fireEmployee(empIndex, fromCompany) {
+    emps[empIndex].company = null
+    emps[empIndex].sala = 0
+    emps[empIndex].socialSecMonthsLeft = globalSocialSecurityPeriod_Months
+    emps[empIndex].socialSecMoney = globalSocialSecurityPeriod_Money 
+}
+
+
+/* See the global employee record for fields and specifications */
+function createEmployee(newName, cash) {
+    var currE = {
+        name: newName,
+        cashAtHand: cash,
+        sala: 0, 
+        prod: 0,
+        roundsInCorp: 0,
+        isEmployed: false
+    }
+    return currE
 }
 
 function init_employees() {
@@ -101,12 +135,28 @@ function init_employees() {
 }
 
 
+/*
+  Active people who are news-hungry, look around 
+  to seeing what companies are doing. Vice versa
+  with active companies, they update their 
+  market knowledge to get a better view of the
+  productivity of individual employees. */
+function visibilityUpdate() {
+
+}
+
+/**
+ * Basic REPL - the loop for driving simulation 
+ */
 function normal_round (specialities) {
 	if (specialities == null) {
 		// Ordinary round
 		console.log('An ordinary round')
-	}
-	return
+	} else {
+        // TBD : handle the key-values in specialties and make code
+        // that does the trick mentioned.
+    }
+	return true
 }
 
 
@@ -128,6 +178,13 @@ function fillRDA(roundData, defSpec, roundsWanted) {
 	}
 }
 
+function prettyMonth( months ) {
+    if (months == 0) {
+        return "the very first month being simulated!";
+    }
+    return "" + i + " months since stimulation (SIC!) began.";
+}
+
 // main program entry point
 
 // Round data array, or 'rda'. This is the description of simulation
@@ -140,7 +197,8 @@ fillRDA(rda, {placeholder: false}, roundsMaxRun)
 console.log('Started simsal -- simulator version ' + versionString())
 for (var i = 0; i < rda.length; i++) {
 	// Run simulator with parameters found from the rda sausage
-    console.log('New Round!')
+    console.log('New Round! It is now ' + prettyMonth(i))
+    MDL()
 }
 console.log('Stop')
 
